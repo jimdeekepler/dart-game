@@ -1,0 +1,203 @@
+#include <iostream>
+#include <random>
+#include <cassert>
+
+using namespace std;
+
+class Player {
+		static vector<Player> players;
+		string _name;
+		int _score;
+
+	public:
+		static Player& addPlayer(const string& name, int score);
+		static void initPlayers(); 
+		static Player& getPlayer(const string& name);
+		static Player& getPlayer(size_t pos);
+
+		Player(const string& name, int score);
+		bool updateScore(int delta);
+		int score() const;
+		void score(int score);
+		const string& name() const;
+
+};
+
+Player DefaultPlayer("", 0);
+
+vector<Player> Player::players;
+
+Player& Player::addPlayer(const string& name, int score) {
+	Player p(name, score);
+	players.push_back(p);
+	return players.back();
+}
+
+void Player::initPlayers() {
+	for (Player& p: players) {
+		p.score(301);
+	}
+}
+
+Player& Player::getPlayer(const string& name) {
+	for (Player& p: players) {
+		if (p.name() == name) {
+			return p;
+		}
+	}
+	// assert(false);
+	return DefaultPlayer;
+}
+
+Player& Player::getPlayer(size_t pos) {
+	if (pos > players.size()) {
+		return DefaultPlayer;
+	}
+	return players[pos];
+}
+
+Player::Player(const string& name, int score)
+	: _name(name), _score(score)
+{
+}
+
+bool Player::updateScore(int delta) {
+	if (_score - delta >= 0) {
+		_score -= delta;
+		return true;
+	}
+	return false;
+}
+
+int Player::score() const {
+	return _score;
+}
+
+void Player::score(int score) {
+	_score = score;
+}
+
+const string& Player::name() const {
+	return _name;
+}
+
+// from: https://stackoverflow.com/a/36527160/6104519 
+float get_random() {
+	static default_random_engine e;
+	static uniform_real_distribution<> dis(0, 1);
+	return dis(e);
+}
+
+/*
+ * Which ring on the board has been hit. Radius from center to outside.
+ * Something like:
+ *   > .95 = center (50 points)
+ *   > .9  = outter center (25 points)
+ *   > .6 && <= 0.65 tripple ring
+ *   ... and so on
+ */
+int roll_ring() {
+	float random = get_random();
+	assert(random >= 0 && random < 1.0);
+	if (random > 0.95) {
+		return 50;
+	} else if (random > 0.9) {
+		return 25;
+	} else if (random > 0.6 && random <= 0.65) {
+		return 3;
+	} else if (random < .1) {
+		return 2;
+	} else {
+		return 1;
+	}
+	assert(false);
+}
+
+int roll_number() {
+	float random = get_random();
+	return floor(20 * random) + 1;
+}
+
+int attempt() {
+	int result;
+	int r = roll_ring();
+	if (r != 50 && r != 25) {
+		result = roll_number();
+		assert(result > 0 && result <= 20);
+		if (r == 2 || r == 3) {
+			result *= r;
+		}
+	} else {
+		result = r;
+	}
+	cout << "Wow, you hit: " << r << "  result: " << result << endl;
+	return result;
+}
+
+void play() {
+	Player::initPlayers();
+	Player& p = Player::getPlayer(0);
+	int loopCount = 20;
+	while (--loopCount >= 0) {
+		cout << "Round: " << (20 - loopCount) << endl;
+		int attempts = 3;
+		while (--attempts >= 0) {
+			cout << "DBG: Attempt #" << (3 - attempts) << endl;
+			int score = attempt();
+			if (!p.updateScore(score)) {
+				// TODO: rename vars:
+				cout << "Too High: You have " << p.score() << " left, but your"
+					" attempt was: " << score << endl;
+				// next player
+				break;
+			}
+			if (p.score() == 0) {
+				cout << p.name() << " has won, in round #" << (20 - loopCount) << endl;
+				return;
+			} else {
+				cout << p.name() << " has " << p.score() << " left." << endl;
+			}
+		}
+	}
+	cout << "No winner. Better luck next time." << endl;
+}
+
+int main(int argc, const char** argv) {
+	string name { "Ray" };
+	// string name;
+	// cout << "Your name: ";
+	// cin >> name;
+	// getline(cin, name);
+	//
+	// TODO:
+	//   How Many Players?
+	//   Enter name or (computer) for automated user
+	//   Choose Game Type (501, 301, ...) Masters In/Out, Double/Tripple In/Out
+	//
+	// TODO:
+	//   Make 'roll_ring', 'roll_number' interactive
+	//
+	// TODO:
+	//   HighScore List
+	//
+	// Let's just play plain 301
+	Player& p = Player::addPlayer(name, 0);
+	cout << "Hello " << p.name() << "! Good to see you. Let's play darts." << endl;
+	cout << "Your score is: " << p.score() << endl;
+
+	bool bAgain = true;
+	do {
+		play();
+		string again;
+		cout << "Play again (y/N)? ";
+		getline(cin, again);
+
+		cout << "DBG: again: " << again << endl;
+		if (again.size() == 0) {
+			break;
+		}
+		string sYesNo = again.substr(0, 1);
+		bAgain = (!sYesNo.compare("y") || !sYesNo.compare("Y"));
+	} while (bAgain);
+	return 0;
+}
