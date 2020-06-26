@@ -11,11 +11,16 @@ class Player {
 
 	public:
 		static Player& addPlayer(const string& name, int score);
-		static void initPlayers(); 
+		static void resetPlayerScores(); 
 		static Player& getPlayer(const string& name);
 		static Player& getPlayer(size_t pos);
+		static vector<Player> getPlayers();
 
 		Player(const string& name, int score);
+
+		// Player(const Player&) = delete;
+		Player& operator=(const Player&) = delete;
+
 		bool updateScore(int delta);
 		int score() const;
 		void score(int score);
@@ -33,7 +38,7 @@ Player& Player::addPlayer(const string& name, int score) {
 	return players.back();
 }
 
-void Player::initPlayers() {
+void Player::resetPlayerScores() {
 	for (Player& p: players) {
 		p.score(301);
 	}
@@ -54,6 +59,10 @@ Player& Player::getPlayer(size_t pos) {
 		return DefaultPlayer;
 	}
 	return players[pos];
+}
+
+vector<Player> Player::getPlayers() {
+	return players;
 }
 
 Player::Player(const string& name, int score)
@@ -135,31 +144,55 @@ int attempt() {
 }
 
 void play() {
-	Player::initPlayers();
-	Player& p = Player::getPlayer(0);
+	Player::resetPlayerScores();
 	int loopCount = 20;
 	while (--loopCount >= 0) {
 		cout << "Round: " << (20 - loopCount) << endl;
-		int attempts = 3;
-		while (--attempts >= 0) {
-			cout << "DBG: Attempt #" << (3 - attempts) << endl;
-			int score = attempt();
-			if (!p.updateScore(score)) {
-				// TODO: rename vars:
-				cout << "Too High: You have " << p.score() << " left, but your"
-					" attempt was: " << score << endl;
-				// next player
-				break;
-			}
-			if (p.score() == 0) {
-				cout << p.name() << " has won, in round #" << (20 - loopCount) << endl;
-				return;
-			} else {
-				cout << p.name() << " has " << p.score() << " left." << endl;
+		// Loop Over Players
+		// for (Player& p: Player::getPlayers()) {
+
+		size_t NUM_PLAYERS = Player::getPlayers().size();
+		for (size_t i=0; i<NUM_PLAYERS; ++i) {
+			Player&p = Player::getPlayer(i);
+			cout << p.name() << "'s score is: " << p.score() << endl;
+			int attempts = 3;
+			while (--attempts >= 0) {
+				cout << "DBG: Attempt #" << (3 - attempts) << endl;
+				int score = attempt();
+				if (!p.updateScore(score)) {
+					// TODO: rename vars:
+					cout << "Too High: You have " << p.score() << " left, but your"
+						" attempt was: " << score << endl;
+					// next player
+					break;
+				}
+				if (p.score() == 0) {
+					cout << p.name() << " has won, in round #" << (20 - loopCount) << endl;
+					return;
+				} else {
+					cout << p.name() << " has " << p.score() << " left." << endl;
+				}
 			}
 		}
 	}
 	cout << "No winner. Better luck next time." << endl;
+}
+
+void initPlayers() {
+	string name;
+	// while (players.size() < 9) {
+	cout << "Please give the names of the players. Empty to quit adding new players." << endl;
+	size_t numPlayers = 0;
+	while (numPlayers < 9) {
+		cout << "Player name: ";
+		getline(cin, name);
+		if ("" == name) break;
+		Player& p = Player::addPlayer(name, 0);
+		cout << "Hello " << p.name() << "! Good to see you. Let's play darts." << endl;
+		++numPlayers;
+	}
+	assert(Player::getPlayers().size() == numPlayers);
+	cout << "Playing with " << Player::getPlayers().size() << " players." << endl;
 }
 
 int main(int argc, const char** argv) {
@@ -181,9 +214,8 @@ int main(int argc, const char** argv) {
 	//   HighScore List
 	//
 	// Let's just play plain 301
-	Player& p = Player::addPlayer(name, 0);
-	cout << "Hello " << p.name() << "! Good to see you. Let's play darts." << endl;
-	cout << "Your score is: " << p.score() << endl;
+	initPlayers();
+	//initGameType();
 
 	bool bAgain = true;
 	do {
@@ -199,5 +231,6 @@ int main(int argc, const char** argv) {
 		string sYesNo = again.substr(0, 1);
 		bAgain = (!sYesNo.compare("y") || !sYesNo.compare("Y"));
 	} while (bAgain);
+	cout << "GAME OVER" << endl;
 	return 0;
 }
