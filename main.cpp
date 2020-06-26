@@ -188,20 +188,15 @@ void initPlayers() {
 		getline(cin, name);
 		if ("" == name) break;
 		Player& p = Player::addPlayer(name, 0);
-		cout << "Hello " << p.name() << "! Good to see you. Let's play darts." << endl;
+		cout << "Hello " << p.name() << "! Good to see you." << endl;
 		++numPlayers;
 	}
 	assert(Player::getPlayers().size() == numPlayers);
+	cout << "Let's play darts." << endl;
 	cout << "Playing with " << Player::getPlayers().size() << " players." << endl;
 }
 
 int main(int argc, const char** argv) {
-	string name { "Ray" };
-	// string name;
-	// cout << "Your name: ";
-	// cin >> name;
-	// getline(cin, name);
-	//
 	// TODO:
 	//   How Many Players?
 	//   Enter name or (computer) for automated user
