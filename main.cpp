@@ -7,7 +7,8 @@ using namespace std;
 class Player {
 		static vector<Player> players;
 		string _name;
-		int _score;
+		vector<int> _scores;
+		int _starting_score, _score;
 
 	public:
 		static Player& addPlayer(const string& name, int score);
@@ -26,7 +27,28 @@ class Player {
 		void score(int score);
 		const string& name() const;
 
+		friend ostream& operator<<(ostream& os, const Player& p);
 };
+
+ostream& operator<<(ostream& os, const Player& p) {
+	int current_score = p._starting_score;
+
+	os << "Player \"" << p.name() << "\" has " << p._scores.size() << " throws" << endl
+		<< "==  " << current_score << endl;
+	// TODO: start score
+	for (size_t i=0; i<p._scores.size(); ++i) {
+		// os << width(3) << p._scores[i] << endl;
+		os << " - " << p._scores[i] << endl;
+		current_score -= p._scores[i];
+		if ((i+1) % 3 == 0) {
+			os << "==  " << current_score << endl;
+		}
+	}
+	if (p._scores.size() % 3) {
+		os << "END " << current_score << endl;
+	}
+	return os;
+}
 
 Player DefaultPlayer("", 0);
 
@@ -66,11 +88,12 @@ vector<Player> Player::getPlayers() {
 }
 
 Player::Player(const string& name, int score)
-	: _name(name), _score(score)
+	: _name(name), _starting_score(score), _score(score)
 {
 }
 
 bool Player::updateScore(int delta) {
+	_scores.push_back(delta);
 	if (_score - delta >= 0) {
 		_score -= delta;
 		return true;
@@ -83,6 +106,7 @@ int Player::score() const {
 }
 
 void Player::score(int score) {
+	_starting_score = score;
 	_score = score;
 }
 
@@ -196,7 +220,7 @@ void play() {
 
 		size_t NUM_PLAYERS = Player::getPlayers().size();
 		for (size_t i=0; i<NUM_PLAYERS; ++i) {
-			Player&p = Player::getPlayer(i);
+			Player& p = Player::getPlayer(i);
 			cout << p.name() << "'s score is: " << p.score() << endl;
 			int attempts = 3;
 			while (--attempts >= 0) {
@@ -263,6 +287,11 @@ void run() {
 	bool bAgain = true;
 	do {
 		play();
+		size_t NUM_PLAYERS = Player::getPlayers().size();
+		for (size_t i=0; i<NUM_PLAYERS; ++i) {
+			cout << Player::getPlayer(i) << endl;
+			cout << endl;
+		}
 		string again;
 		cout << "Play again (y/N)? ";
 		getline(cin, again);
