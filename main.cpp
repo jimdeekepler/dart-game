@@ -127,6 +127,49 @@ int roll_number() {
 	return floor(20 * random) + 1;
 }
 
+string bool_str(bool f) {
+	return (f) ? "yes" : "no";
+}
+
+int manual_attempt() {
+	cout << "Enter your score: ";
+	string score;
+	getline(cin, score);
+	cout << "YOUR SCORE: " << score << endl;
+
+	int result = 0;
+	bool is_double = false, is_triple = false;
+	if (score.find("2*") != string::npos) {
+		is_double = true;
+		score = score.substr(score.find("2*") + 2);
+		cout << "score is now: " << score << endl;
+	} else if (score.find("3*") != string::npos) {
+		is_triple = true;
+		score = score.substr(score.find("3*") + 2);
+		cout << "score is now: " << score << endl;
+	}
+	int iscore = atoi(score.c_str()); // TODO: ???
+	if (iscore < 0 || (iscore > 20 && iscore != 25 && iscore != 50)) {
+		cout << "invalid score: " << iscore << endl;
+	} else {
+		if (iscore == 50) {
+			result = 25;
+			is_double = true;
+		} else {
+			result = iscore;
+			if (is_double) {
+				result *= 2;
+			} else if (is_triple) {
+				result *= 3;
+			}
+		}
+	}
+	cout << "++ " << result << "  2* " << bool_str(is_double) << "  3* " << bool_str(is_triple) << endl;
+
+	//throw runtime_error("ABORT. ABEND.");
+	return result;
+}
+
 int attempt() {
 	int result;
 	int r = roll_ring();
@@ -158,7 +201,12 @@ void play() {
 			int attempts = 3;
 			while (--attempts >= 0) {
 				cout << "DBG: Attempt #" << (3 - attempts) << endl;
-				int score = attempt();
+				int score;
+				if (p.name() != "computer") {
+					score = manual_attempt();
+				} else {
+					score = attempt();
+				}
 				if (!p.updateScore(score)) {
 					// TODO: rename vars:
 					cout << "Too High: You have " << p.score() << " left, but your"
@@ -196,7 +244,7 @@ void initPlayers() {
 	cout << "Playing with " << Player::getPlayers().size() << " players." << endl;
 }
 
-int main(int argc, const char** argv) {
+void run() {
 	// TODO:
 	//   How Many Players?
 	//   Enter name or (computer) for automated user
@@ -227,5 +275,14 @@ int main(int argc, const char** argv) {
 		bAgain = (!sYesNo.compare("y") || !sYesNo.compare("Y"));
 	} while (bAgain);
 	cout << "GAME OVER" << endl;
+}
+
+int main(int argc, const char** argv) {
+	try {
+		run();
+	} catch (...) {
+		cerr << "Bekackt!" << endl;
+		return 1;
+	}
 	return 0;
 }
