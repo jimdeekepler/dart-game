@@ -6,9 +6,9 @@ using namespace std;
 
 class Player {
 		static vector<Player> players;
-		string _name;
-		vector<int> _scores;
-		int _starting_score, _score;
+		string name_;
+		vector<int> scores_;
+		int starting_score_, score_;
 
 	public:
 		static Player& addPlayer(const string& name, int score);
@@ -31,20 +31,20 @@ class Player {
 };
 
 ostream& operator<<(ostream& os, const Player& p) {
-	int current_score = p._starting_score;
+	int current_score = p.starting_score_;
 
-	os << "Player \"" << p.name() << "\" has " << p._scores.size() << " throws" << endl
+	os << "Player \"" << p.name() << "\" has " << p.scores_.size() << " throws" << endl
 		<< "==  " << current_score << endl;
 	// TODO: start score
-	for (size_t i=0; i<p._scores.size(); ++i) {
-		// os << width(3) << p._scores[i] << endl;
-		os << " - " << p._scores[i] << endl;
-		current_score -= p._scores[i];
+	for (size_t i=0; i<p.scores_.size(); ++i) {
+		// os << width(3) << p.scores_[i] << endl;
+		os << " - " << p.scores_[i] << endl;
+		current_score -= p.scores_[i];
 		if ((i+1) % 3 == 0) {
 			os << "==  " << current_score << endl;
 		}
 	}
-	if (p._scores.size() % 3) {
+	if (p.scores_.size() % 3) {
 		os << "END " << current_score << endl;
 	}
 	return os;
@@ -88,31 +88,31 @@ vector<Player> Player::getPlayers() {
 }
 
 Player::Player(const string& name, int score)
-	: _name(name), _starting_score(score), _score(score)
+	: name_(name), starting_score_(score), score_(score)
 {
 }
 
 bool Player::updateScore(int delta) {
-	if (_score - delta >= 0) {
-		_scores.push_back(delta);
-		_score -= delta;
+	if (score_ - delta >= 0) {
+		scores_.push_back(delta);
+		score_ -= delta;
 		return true;
 	}
 	return false;
 }
 
 int Player::score() const {
-	return _score;
+	return score_;
 }
 
 void Player::score(int score) {
-	_starting_score = score;
-	_score = score;
-	_scores.clear();
+	starting_score_ = score;
+	score_ = score;
+	scores_.clear();
 }
 
 const string& Player::name() const {
-	return _name;
+	return name_;
 }
 
 // from: https://stackoverflow.com/a/36527160/6104519 
