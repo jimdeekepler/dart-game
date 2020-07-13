@@ -93,8 +93,8 @@ Player::Player(const string& name, int score)
 }
 
 bool Player::updateScore(int delta) {
-	_scores.push_back(delta);
 	if (_score - delta >= 0) {
+		_scores.push_back(delta);
 		_score -= delta;
 		return true;
 	}
@@ -108,6 +108,7 @@ int Player::score() const {
 void Player::score(int score) {
 	_starting_score = score;
 	_score = score;
+	_scores.clear();
 }
 
 const string& Player::name() const {
@@ -235,6 +236,10 @@ void play() {
 					// TODO: rename vars:
 					cout << "Too High: You have " << p.score() << " left, but your"
 						" attempt was: " << score << endl;
+					// fill remaining attempts with '0'
+					while (--attempts >= 0) {
+						p.updateScore(0);
+					}
 					// next player
 					break;
 				}
